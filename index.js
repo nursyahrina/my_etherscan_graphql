@@ -1,29 +1,37 @@
-const { ApolloServer } = require("apollo-server");
-const { importSchema } = require("graphql-import");
-const EtherDataSource = require("./datasource/ethDatasource");
-const typeDefs = importSchema("./schema.graphql");
+const { ApolloServer } = require("apollo-server"); // Import Apollo Server from apollo-server
+const { importSchema } = require("graphql-import"); // Import importSchema method from graphql-import
+const EtherDataSource = require("./datasource/ethDatasource"); // Import EtherDataSource class 
 
-require("dotenv").config();
+const typeDefs = importSchema("./schema.graphql"); // Import schema from schema.graphql file
+
+require("dotenv").config(); // Load environment variables from .env file
 
 const resolvers = {
   Query: {
-    getEthByAddress: (root, _args, { dataSources }) =>
-      dataSources.ethDataSource.etherBalanceByAddress(),
-    getTotalSupplyEth: (root, _args, { dataSources }) =>
+    etherBalanceByAddress: (root, _args, { dataSources }) => // Resolver to get ether balance for an address
+      dataSources.ethDataSource.etherBalanceByAddress(), 
+
+    totalSupplyOfEther: (root, _args, { dataSources }) => // Resolver to get total ether supply
       dataSources.ethDataSource.totalSupplyOfEther(),
-    //Paste Code for New Resolver Functions
+
+    latestEthereumPrice: (root, _args, { dataSources }) => // Resolver to get latest ether price
+      dataSources.ethDataSource.getLatestEthereumPrice(),
+
+    blockConfirmationTime: (root, _args, { dataSources }) => // Resolver to get average block confirmation time
+      dataSources.ethDataSource.getBlockConfirmationTime(),
   },
 };
 
-const server = new ApolloServer({
+const server = new ApolloServer({ // Create Apollo Server instance
   typeDefs,
   resolvers,
   dataSources: () => ({
-    ethDataSource: new EtherDataSource(),
-  }),
+    ethDataSource: new EtherDataSource(), // Pass EtherDataSource instance to dataSources
+  }), 
 });
 
-server.timeout = 0;
-server.listen("9000").then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
+server.timeout = 0; 
+
+server.listen("9000").then(({ url }) => { // Start Apollo Server on port 9000
+  console.log(`🚀 Server ready at ${url}`); 
 });
